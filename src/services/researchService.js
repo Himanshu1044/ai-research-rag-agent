@@ -22,16 +22,29 @@ export const getResearchRequestsByUser = async (userId) => {
 }
 
 export const updateResearchStatus = async (researchRequestId, status) => {
+    let result;
 
-    const result = await pool.query(
-        `UPDATE research_requests
-         SET status = $1 
-         WHERE id = $2
-         RETURNING id,question,status,created_at
-        `, [status, researchRequestId])
+    if (status === 'completed') {
+        result = await pool.query(
+            `UPDATE research_requests
+             SET status = $1,
+                 completed_at = CURRENT_TIMESTAMP
+             WHERE id = $2
+             RETURNING id, question, status, created_at, completed_at`,
+            [status, researchRequestId]
+        );
+    } else {
+        result = await pool.query(
+            `UPDATE research_requests
+             SET status = $1
+             WHERE id = $2
+             RETURNING id, question, status, created_at, completed_at`,
+            [status, researchRequestId]
+        );
+    }
 
     return result.rows[0];
-}
+};
 
 export const getResearchRequestById = async (researchRequestId) => {
     const result = await pool.query(
