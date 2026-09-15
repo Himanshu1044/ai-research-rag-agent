@@ -4,20 +4,18 @@ export const createResearchSource = async (
     researchRequestId,
     url,
     title,
-    content,
     sourceIndex
 ) => {
     const result = await pool.query(
         `INSERT INTO research_sources
-            (research_request_id, url, title, content, source_index, retrieved_at)
+            (research_request_id, url, title, source_index, retrieved_at)
          VALUES
-            ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+            ($1, $2, $3, $4, CURRENT_TIMESTAMP)
          RETURNING
             id,
             research_request_id,
             url,
             title,
-            content,
             source_index,
             retrieved_at,
             created_at`,
@@ -25,7 +23,6 @@ export const createResearchSource = async (
             researchRequestId,
             url,
             title,
-            content,
             sourceIndex
         ]
     );

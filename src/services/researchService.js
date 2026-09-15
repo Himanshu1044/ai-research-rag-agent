@@ -56,3 +56,39 @@ export const getResearchRequestById = async (researchRequestId) => {
 
     return result.rows[0];
 };
+
+export const getResearchDetails = async (researchRequestId, userId) => {
+    const researchRequestResult = await pool.query(
+        `SELECT id, question, status, created_at, completed_at
+         FROM research_requests
+         WHERE id = $1
+         AND user_id = $2`,
+        [researchRequestId, userId]
+    )
+    const researchRequest = researchRequestResult.rows[0];
+
+    if (!researchRequest) {
+        return null;
+    }
+
+    const reportResult = await pool.query(
+        `SELECT id, content, created_at, updated_at
+         FROM reports
+         WHERE research_request_id = $1`,
+        [researchRequestId]
+    );
+
+    const sourcesResult = await pool.query(
+        `SELECT id, title, url, source_index, retrieved_at
+         FROM research_sources
+         WHERE research_request_id = $1
+         ORDER BY source_index`,
+        [researchRequestId]
+    );
+
+     return {
+        researchRequest,
+        report: reportResult.rows[0] || null,
+        sources: sourcesResult.rows
+    };
+}

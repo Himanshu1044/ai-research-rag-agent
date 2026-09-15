@@ -10,7 +10,11 @@ export const runResearchAgent = async (researchRequestId) => {
 
     const question = researchRequest.question;
 
-    const result = await generateText(question);
+    const result = await generateText(
+        question,
+        researchRequest.user_id
+    );
+
     const report = await createReport(
         researchRequestId,
         result.answer
@@ -23,12 +27,32 @@ export const runResearchAgent = async (researchRequestId) => {
             researchRequestId,
             source.url,
             source.title,
-            source.content,
             i + 1
         );
     }
-    await updateResearchStatus(
+    const updatedResearchRequest = await updateResearchStatus(
         researchRequestId,
         'completed'
     );
+
+    const sources = result.sources.map((source) => ({
+        title: source.title,
+        url: source.url
+    }));
+
+    const knowledge = result.knowledge.map((item) => ({
+        documentId: item.document_id,
+        documentTitle: item.title,
+        source: item.source,
+        chunkIndex: item.chunk_index,
+        distance: item.distance
+    }));
+
+
+    return {
+        researchRequest: updatedResearchRequest,
+        report,
+        sources,
+        knowledge
+    };
 }

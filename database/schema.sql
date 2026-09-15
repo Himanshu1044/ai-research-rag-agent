@@ -29,7 +29,6 @@ CREATE TABLE IF NOT EXISTS research_sources (
     url TEXT NOT NULL,
     title TEXT,
     domain VARCHAR(255),
-    content TEXT,
     source_index INTEGER NOT NULL,
     retrieved_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
