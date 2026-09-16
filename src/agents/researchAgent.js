@@ -6,6 +6,12 @@ import { createResearchSource } from '../services/researchSourceService.js';
 export const runResearchAgent = async (researchRequestId) => {
     const researchRequest = await getResearchRequestById(researchRequestId);
 
+    if (!researchRequest) {
+        throw new Error(
+            `Research request ${researchRequestId} not found`
+        );
+    }
+
     await updateResearchStatus(researchRequestId, 'running')
 
     const question = researchRequest.question;

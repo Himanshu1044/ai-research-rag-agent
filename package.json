@@ -13,10 +13,12 @@
   "description": "",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "bullmq": "^6.3.6",
     "cheerio": "^1.2.0",
     "cohere-ai": "^8.1.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
     "nodemon": "^3.1.14",
     "pg": "^8.23.0"
