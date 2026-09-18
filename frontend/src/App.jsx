@@ -462,9 +462,40 @@ function App() {
   };
 
   useEffect(() => {
-    if (token) {
-      fetchDocuments();
+    if (!token) {
+      return;
     }
+
+    const loadDocuments = async () => {
+      setDocumentsLoading(true);
+      setDocumentError('');
+
+      try {
+        const response = await fetch(
+          'http://localhost:5000/api/documents',
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch documents');
+        }
+
+        setDocuments(data.documents);
+      } catch (error) {
+        console.error('Failed to fetch documents:', error);
+        setDocumentError(error.message);
+      } finally {
+        setDocumentsLoading(false);
+      }
+    };
+
+    loadDocuments();
   }, [token]);
 
   const handleDocumentClick = async (documentId) => {
@@ -668,392 +699,392 @@ function App() {
 
 
 
-            {/* ---------------------------------------------------------------- */}
-            {/* New Research Form */}
-            {/* ---------------------------------------------------------------- */}
+                {/* ---------------------------------------------------------------- */}
+                {/* New Research Form */}
+                {/* ---------------------------------------------------------------- */}
 
-            <form
-              className="research-form"
-              onSubmit={handleSubmit}
-            >
-
-              <textarea
-                value={question}
-                onChange={(event) =>
-                  setQuestion(event.target.value)
-                }
-                placeholder="What would you like to research?"
-                rows="5"
-              />
-
-              <div className="form-footer">
-
-                <span>
-                  The agent will research your question
-                  asynchronously.
-                </span>
-
-                <button
-                  type="submit"
-                  disabled={loading}
+                <form
+                  className="research-form"
+                  onSubmit={handleSubmit}
                 >
-                  {loading
-                    ? 'Starting Research...'
-                    : 'Start Research'}
-                </button>
 
-              </div>
+                  <textarea
+                    value={question}
+                    onChange={(event) =>
+                      setQuestion(event.target.value)
+                    }
+                    placeholder="What would you like to research?"
+                    rows="5"
+                  />
 
-            </form>
+                  <div className="form-footer">
 
-
-            {/* ---------------------------------------------------------------- */}
-            {/* Error */}
-            {/* ---------------------------------------------------------------- */}
-
-            {error && (
-              <div className="error-message">
-                <strong>Error:</strong>{' '}
-                {error}
-              </div>
-            )}
-
-
-            {/* ---------------------------------------------------------------- */}
-            {/* Main Research Workspace */}
-            {/* ---------------------------------------------------------------- */}
-
-            <div className="research-workspace">
-
-              {/* ============================================================ */}
-              {/* History Sidebar */}
-              {/* ============================================================ */}
-
-              <aside className="history-sidebar">
-
-                <div className="sidebar-header">
-
-                  <div className="section-heading">
-
-                    <span className="section-icon">
-                      ◷
+                    <span>
+                      The agent will research your question
+                      asynchronously.
                     </span>
 
-                    <h2>
-                      Research History
-                    </h2>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                    >
+                      {loading
+                        ? 'Starting Research...'
+                        : 'Start Research'}
+                    </button>
 
                   </div>
 
-                  <span className="history-count">
-                    {history.length}
-                  </span>
-
-                </div>
+                </form>
 
 
-                <div className="history-scroll">
+                {/* ---------------------------------------------------------------- */}
+                {/* Error */}
+                {/* ---------------------------------------------------------------- */}
 
-                  {historyLoading ? (
-
-                    <p className="history-empty">
-                      Loading history...
-                    </p>
-
-                  ) : history.length === 0 ? (
-
-                    <p className="history-empty">
-                      No research requests yet.
-                    </p>
-
-                  ) : (
-
-                    <div className="history-list">
-
-                      {history.map((item) => {
-
-                        const isSelected =
-                          research?.researchRequest?.id ===
-                          item.id;
-
-                        return (
-                          <button
-                            key={item.id}
-                            type="button"
-                            className={
-                              isSelected
-                                ? 'history-card selected'
-                                : 'history-card'
-                            }
-                            onClick={() =>
-                              handleHistoryClick(item.id)
-                            }
-                          >
-
-                            <div className="history-info">
-
-                              <strong>
-                                {item.question}
-                              </strong>
-
-                              <span>
-                                {new Date(
-                                  item.created_at
-                                ).toLocaleString()}
-                              </span>
-
-                            </div>
-
-                            <span
-                              className={`status status-${item.status}`}
-                            >
-                              {item.status}
-                            </span>
-
-                          </button>
-                        );
-                      })}
-
-                    </div>
-
-                  )}
-
-                </div>
-
-              </aside>
-
-
-              {/* ============================================================ */}
-              {/* Current Research */}
-              {/* ============================================================ */}
-
-              <section className="current-research">
-
-                {!research ? (
-
-                  <div className="research-placeholder">
-
-                    <div className="placeholder-icon">
-                      ✦
-                    </div>
-
-                    <h2>
-                      Your research will appear here
-                    </h2>
-
-                    <p>
-                      Start a new research request or select
-                      one from your history.
-                    </p>
-
+                {error && (
+                  <div className="error-message">
+                    <strong>Error:</strong>{' '}
+                    {error}
                   </div>
+                )}
 
-                ) : (
 
-                  <div className="research-container">
+                {/* ---------------------------------------------------------------- */}
+                {/* Main Research Workspace */}
+                {/* ---------------------------------------------------------------- */}
 
-                    {/* ------------------------------------------------------ */}
-                    {/* Research Meta */}
-                    {/* ------------------------------------------------------ */}
+                <div className="research-workspace">
 
-                    <div className="research-meta">
+                  {/* ============================================================ */}
+                  {/* History Sidebar */}
+                  {/* ============================================================ */}
 
-                      <div>
+                  <aside className="history-sidebar">
 
-                        <span className="meta-label">
-                          Research ID
+                    <div className="sidebar-header">
+
+                      <div className="section-heading">
+
+                        <span className="section-icon">
+                          ◷
                         </span>
 
-                        <span>
-                          {research.researchRequest.id}
-                        </span>
+                        <h2>
+                          Research History
+                        </h2>
 
                       </div>
 
-                      <div>
-
-                        <span className="meta-label">
-                          Status
-                        </span>
-
-                        <span
-                          className={`status status-${research.researchRequest.status}`}
-                        >
-                          {research.researchRequest.status}
-                        </span>
-
-                      </div>
-
-                    </div>
-
-
-                    {/* ------------------------------------------------------ */}
-                    {/* Question */}
-                    {/* ------------------------------------------------------ */}
-
-                    <div className="question-display">
-
-                      <span className="meta-label">
-                        Research Question
+                      <span className="history-count">
+                        {history.length}
                       </span>
 
-                      <h2>
-                        {research.researchRequest.question}
-                      </h2>
-
                     </div>
 
 
-                    {/* ------------------------------------------------------ */}
-                    {/* Researching State */}
-                    {/* ------------------------------------------------------ */}
+                    <div className="history-scroll">
 
-                    {research.researchRequest.status ===
-                      'running' && (
-                      <div className="research-loading">
+                      {historyLoading ? (
 
-                        <div className="loading-spinner" />
+                        <p className="history-empty">
+                          Loading history...
+                        </p>
 
-                        <div>
+                      ) : history.length === 0 ? (
 
-                          <strong>
-                            Research in progress
-                          </strong>
+                        <p className="history-empty">
+                          No research requests yet.
+                        </p>
 
-                          <p>
-                            The agent is researching your
-                            question. This may take a moment.
-                          </p>
+                      ) : (
+
+                        <div className="history-list">
+
+                          {history.map((item) => {
+
+                            const isSelected =
+                              research?.researchRequest?.id ===
+                              item.id;
+
+                            return (
+                              <button
+                                key={item.id}
+                                type="button"
+                                className={
+                                  isSelected
+                                    ? 'history-card selected'
+                                    : 'history-card'
+                                }
+                                onClick={() =>
+                                  handleHistoryClick(item.id)
+                                }
+                              >
+
+                                <div className="history-info">
+
+                                  <strong>
+                                    {item.question}
+                                  </strong>
+
+                                  <span>
+                                    {new Date(
+                                      item.created_at
+                                    ).toLocaleString()}
+                                  </span>
+
+                                </div>
+
+                                <span
+                                  className={`status status-${item.status}`}
+                                >
+                                  {item.status}
+                                </span>
+
+                              </button>
+                            );
+                          })}
 
                         </div>
 
+                      )}
+
+                    </div>
+
+                  </aside>
+
+
+                  {/* ============================================================ */}
+                  {/* Current Research */}
+                  {/* ============================================================ */}
+
+                  <section className="current-research">
+
+                    {!research ? (
+
+                      <div className="research-placeholder">
+
+                        <div className="placeholder-icon">
+                          ✦
+                        </div>
+
+                        <h2>
+                          Your research will appear here
+                        </h2>
+
+                        <p>
+                          Start a new research request or select
+                          one from your history.
+                        </p>
+
                       </div>
-                    )}
+
+                    ) : (
+
+                      <div className="research-container">
+
+                        {/* ------------------------------------------------------ */}
+                        {/* Research Meta */}
+                        {/* ------------------------------------------------------ */}
+
+                        <div className="research-meta">
+
+                          <div>
+
+                            <span className="meta-label">
+                              Research ID
+                            </span>
+
+                            <span>
+                              {research.researchRequest.id}
+                            </span>
+
+                          </div>
+
+                          <div>
+
+                            <span className="meta-label">
+                              Status
+                            </span>
+
+                            <span
+                              className={`status status-${research.researchRequest.status}`}
+                            >
+                              {research.researchRequest.status}
+                            </span>
+
+                          </div>
+
+                        </div>
 
 
-                    {/* ------------------------------------------------------ */}
-                    {/* Report */}
-                    {/* ------------------------------------------------------ */}
+                        {/* ------------------------------------------------------ */}
+                        {/* Question */}
+                        {/* ------------------------------------------------------ */}
 
-                    {research.report && (
-                      <div className="report-section">
+                        <div className="question-display">
 
-                        <div className="section-heading">
-
-                          <span className="section-icon">
-                            ✦
+                          <span className="meta-label">
+                            Research Question
                           </span>
 
                           <h2>
-                            Research Report
+                            {research.researchRequest.question}
                           </h2>
 
                         </div>
 
-                        <article className="report-content">
 
-                          <ReactMarkdown>
-                            {research.report.content}
-                          </ReactMarkdown>
+                        {/* ------------------------------------------------------ */}
+                        {/* Researching State */}
+                        {/* ------------------------------------------------------ */}
 
-                        </article>
+                        {research.researchRequest.status ===
+                          'running' && (
+                            <div className="research-loading">
 
-                      </div>
-                    )}
+                              <div className="loading-spinner" />
+
+                              <div>
+
+                                <strong>
+                                  Research in progress
+                                </strong>
+
+                                <p>
+                                  The agent is researching your
+                                  question. This may take a moment.
+                                </p>
+
+                              </div>
+
+                            </div>
+                          )}
 
 
-                    {/* ------------------------------------------------------ */}
-                    {/* Sources */}
-                    {/* ------------------------------------------------------ */}
+                        {/* ------------------------------------------------------ */}
+                        {/* Report */}
+                        {/* ------------------------------------------------------ */}
 
-                    {research.sources &&
-                      research.sources.length > 0 && (
-                        <div className="sources-section">
+                        {research.report && (
+                          <div className="report-section">
 
-                          <div className="section-heading">
+                            <div className="section-heading">
 
-                            <span className="section-icon">
-                              ↗
-                            </span>
+                              <span className="section-icon">
+                                ✦
+                              </span>
 
-                            <h2>
-                              Sources
-                            </h2>
+                              <h2>
+                                Research Report
+                              </h2>
 
-                          </div>
+                            </div>
 
-                          <div className="source-list">
+                            <article className="report-content">
 
-                            {research.sources.map(
-                              (source, index) => (
+                              <ReactMarkdown>
+                                {research.report.content}
+                              </ReactMarkdown>
 
-                                <a
-                                  key={source.url}
-                                  href={source.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="source-card"
-                                >
-
-                                  <span className="source-number">
-                                    {index + 1}
-                                  </span>
-
-                                  <span className="source-info">
-
-                                    <strong>
-                                      {source.title ||
-                                        source.url}
-                                    </strong>
-
-                                    <span>
-                                      {source.url}
-                                    </span>
-
-                                  </span>
-
-                                  <span className="source-arrow">
-                                    ↗
-                                  </span>
-
-                                </a>
-
-                              )
-                            )}
+                            </article>
 
                           </div>
-
-                        </div>
-                      )}
+                        )}
 
 
-                    {/* ------------------------------------------------------ */}
-                    {/* Failed State */}
-                    {/* ------------------------------------------------------ */}
+                        {/* ------------------------------------------------------ */}
+                        {/* Sources */}
+                        {/* ------------------------------------------------------ */}
 
-                    {research.researchRequest.status ===
-                      'failed' && (
-                      <div className="research-failed">
+                        {research.sources &&
+                          research.sources.length > 0 && (
+                            <div className="sources-section">
 
-                        <strong>
-                          Research failed
-                        </strong>
+                              <div className="section-heading">
 
-                        <p>
-                          Something went wrong while processing
-                          this research request.
-                        </p>
+                                <span className="section-icon">
+                                  ↗
+                                </span>
+
+                                <h2>
+                                  Sources
+                                </h2>
+
+                              </div>
+
+                              <div className="source-list">
+
+                                {research.sources.map(
+                                  (source, index) => (
+
+                                    <a
+                                      key={source.url}
+                                      href={source.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="source-card"
+                                    >
+
+                                      <span className="source-number">
+                                        {index + 1}
+                                      </span>
+
+                                      <span className="source-info">
+
+                                        <strong>
+                                          {source.title ||
+                                            source.url}
+                                        </strong>
+
+                                        <span>
+                                          {source.url}
+                                        </span>
+
+                                      </span>
+
+                                      <span className="source-arrow">
+                                        ↗
+                                      </span>
+
+                                    </a>
+
+                                  )
+                                )}
+
+                              </div>
+
+                            </div>
+                          )}
+
+
+                        {/* ------------------------------------------------------ */}
+                        {/* Failed State */}
+                        {/* ------------------------------------------------------ */}
+
+                        {research.researchRequest.status ===
+                          'failed' && (
+                            <div className="research-failed">
+
+                              <strong>
+                                Research failed
+                              </strong>
+
+                              <p>
+                                Something went wrong while processing
+                                this research request.
+                              </p>
+
+                            </div>
+                          )}
 
                       </div>
+
                     )}
 
-                  </div>
+                  </section>
 
-                )}
-
-              </section>
-
-            </div>
+                </div>
 
               </>
             )}

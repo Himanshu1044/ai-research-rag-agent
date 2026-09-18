@@ -2,7 +2,7 @@ import { Queue } from "bullmq";
 
 const researchQueue = new Queue("research", {
     connection: {
-        host: "127.0.0.1",
+        host: "research-redis",
         port: 6379
     },
     defaultJobOptions: {
