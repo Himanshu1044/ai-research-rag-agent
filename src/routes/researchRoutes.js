@@ -1,5 +1,5 @@
 import express from 'express';
-import { createResearch, getResearchHistory, getResearchDetailsController} from '../controllers/researchController.js';
+import { createResearch, getResearchHistory, getResearchDetailsController } from '../controllers/researchController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js'
 
 const router = express.Router();

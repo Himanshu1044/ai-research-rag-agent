@@ -16,6 +16,7 @@
     "bullmq": "^6.3.6",
     "cheerio": "^1.2.0",
     "cohere-ai": "^8.1.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "ioredis": "^6.0.0",

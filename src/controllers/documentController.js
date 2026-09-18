@@ -1,6 +1,8 @@
 import {
     createDocument,
-    getDocumentsByUser
+    getDocumentsByUser,
+    getDocumentById,
+    updateDocumentStatus
 } from '../services/documentService.js';
 
 import { chunkText } from '../utils/chunkText.js';
@@ -12,10 +14,10 @@ import {
 
 import { createEmbedding } from '../services/embeddingService.js';
 
-
 export const postDocument = async (req, res) => {
-    try {
+    let document;
 
+    try {
         const userId = req.user.userId;
 
         const { title, source, content } = req.body;
@@ -26,26 +28,26 @@ export const postDocument = async (req, res) => {
             });
         }
 
-        // 1. Create the document
-        const document = await createDocument(
+        document = await createDocument(
             userId,
             title,
             source,
             content
         );
 
-        // 2. Split document into chunks
+        await updateDocumentStatus(
+            document.id,
+            'processing'
+        );
+
         const chunks = chunkText(content);
 
-        // 3. Store chunks in database
         const documentChunks = await createDocumentChunks(
             document.id,
             chunks
         );
 
-        // 4. Generate and store embeddings
         for (const chunk of documentChunks) {
-
             const embedding = await createEmbedding(
                 chunk.content
             );
@@ -56,15 +58,30 @@ export const postDocument = async (req, res) => {
             );
         }
 
+        const completedDocument = await updateDocumentStatus(
+            document.id,
+            'completed'
+        );
+
         return res.status(201).json({
             message: 'Document created successfully',
-            document,
+            document: completedDocument,
             chunksCreated: documentChunks.length
         });
 
     } catch (err) {
-
         console.error(err);
+
+        if (document) {
+            try {
+                await updateDocumentStatus(
+                    document.id,
+                    'failed'
+                );
+            } catch (statusError) {
+                console.error(statusError);
+            }
+        }
 
         return res.status(500).json({
             error: 'Internal server error'
@@ -72,10 +89,8 @@ export const postDocument = async (req, res) => {
     }
 };
 
-
 export const getDocuments = async (req, res) => {
     try {
-
         const userId = req.user.userId;
 
         const documents = await getDocumentsByUser(userId);
@@ -86,7 +101,35 @@ export const getDocuments = async (req, res) => {
         });
 
     } catch (err) {
+        console.error(err);
 
+        return res.status(500).json({
+            error: 'Internal server error'
+        });
+    }
+};
+
+export const getDocument = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const documentId = req.params.id;
+
+        const document = await getDocumentById(
+            documentId,
+            userId
+        );
+
+        if (!document) {
+            return res.status(404).json({
+                error: 'Document not found'
+            });
+        }
+
+        return res.status(200).json({
+            document
+        });
+
+    } catch (err) {
         console.error(err);
 
         return res.status(500).json({

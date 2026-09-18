@@ -4,6 +4,8 @@ import { CohereClientV2 } from 'cohere-ai';
 import { searchWeb } from '../tools/searchWeb.js';
 import { readPage } from '../tools/readPage.js';
 import { retrieveKnowledge } from './retrievalService.js';
+import { saveMemory } from '../tools/saveMemory.js';
+import { retrieveMemory } from '../tools/retrieveMemory.js';
 
 const cohere = new CohereClientV2({
     token: process.env.COHERE_API_KEY
@@ -14,6 +16,10 @@ const toolFunctions = {
     readPage: (args) => readPage(args.url),
     retrieveKnowledge: (args, userId) =>
         retrieveKnowledge(userId, args.query, args.limit),
+    saveMemory: (args, userId) =>
+        saveMemory(userId, args.content),
+    retrieveMemory: (args, userId) =>
+        retrieveMemory(userId),
 };
 
 const tools = [
@@ -73,6 +79,34 @@ const tools = [
                 required: ['query']
             }
         }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'saveMemory',
+            description: 'Save useful information about the user that may be relevant in future conversations.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    content: {
+                        type: 'string',
+                        description: 'The information about the user that should be remembered.'
+                    }
+                },
+                required: ['content']
+            }
+        }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'retrieveMemory',
+            description: 'Retrieve information previously saved about the user.',
+            parameters: {
+                type: 'object',
+                properties: {}
+            }
+        }
     }
 ];
 
@@ -101,6 +135,8 @@ Your responsibilities:
 - Use searchWeb when current or external web information is needed.
 - You may use both when appropriate.
 - Never assume information exists in the user's knowledge base; use the tool to check when relevant.
+- Use retrieveMemory when previous information about the user may help answer the question.
+- Use saveMemory when the user provides useful information that should be remembered for future research.
 `
         },
         {
@@ -157,9 +193,16 @@ Your responsibilities:
         let result;
 
         try {
-            if (toolName === 'retrieveKnowledge') {
+            if (
+                toolName === 'retrieveKnowledge' ||
+                toolName === 'saveMemory' ||
+                toolName === 'retrieveMemory'
+            ) {
                 result = await toolFunction(toolArguments, userId);
-                knowledge.push(...result);
+
+                if (toolName === 'retrieveKnowledge') {
+                    knowledge.push(...result);
+                }
             } else {
                 result = await toolFunction(toolArguments);
             }
@@ -184,10 +227,25 @@ Your responsibilities:
             toolCalls: response.message.toolCalls
         });
 
+        const toolResults = Array.isArray(result)
+            ? result
+            : [result];
+
         messages.push({
             role: 'tool',
             toolCallId: toolCall.id,
-            content: JSON.stringify(result)
+            content: toolResults.map((item) => ({
+                type: 'document',
+                document: {
+                    id: String(item.id ?? `${toolCall.id}`),
+                    data: {
+                        ...item,
+                        id: item.id !== undefined
+                            ? String(item.id)
+                            : undefined
+                    }
+                }
+            }))
         });
     }
 
