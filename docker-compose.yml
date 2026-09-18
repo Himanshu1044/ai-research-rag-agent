@@ -18,6 +18,8 @@ services:
       - "5000:5000"
     env_file:
       - .env
+    environment:
+      REDIS_URL: redis://research-redis:6379
     depends_on:
       redis:
         condition: service_healthy
@@ -30,6 +32,8 @@ services:
     container_name: ai-research-worker
     env_file:
       - .env
+    environment:
+      REDIS_URL: redis://research-redis:6379
     depends_on:
       redis:
         condition: service_healthy

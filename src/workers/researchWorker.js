@@ -36,8 +36,7 @@ const researchWorker = new Worker(
     },
     {
         connection: {
-            host: "research-redis",
-            port: 6379
+            url: process.env.REDIS_URL
         }
     }
 );
