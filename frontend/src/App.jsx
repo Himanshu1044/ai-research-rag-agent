@@ -657,6 +657,7 @@ function App() {
 
             <button
               type="button"
+              className="auth-switch"
               onClick={() => {
                 setIsRegistering((current) => !current);
                 setError('');
