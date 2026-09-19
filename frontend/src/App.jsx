@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import './App.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function App() {
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,7 +68,7 @@ function App() {
 
     try {
       const response = await fetch(
-        'http://localhost:5000/api/auth/login',
+        '${API_URL}/auth/login',
         {
           method: 'POST',
           headers: {
@@ -137,7 +139,7 @@ function App() {
 
       try {
         const response = await fetch(
-          'http://localhost:5000/api/research',
+          '${API_URL}/research',
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -192,7 +194,7 @@ function App() {
 
     try {
       const response = await fetch(
-        'http://localhost:5000/api/research',
+        '${API_URL}/research',
         {
           method: 'POST',
           headers: {
@@ -272,7 +274,7 @@ function App() {
     const checkResearchStatus = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/research/${research.researchRequest.id}`,
+          `${API_URL}/research/${research.researchRequest.id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -330,7 +332,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/research/${researchId}`,
+        `${API_URL}/research/${researchId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -379,7 +381,7 @@ function App() {
 
     try {
       const response = await fetch(
-        'http://localhost:5000/api/documents',
+        '${API_URL}/documents',
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -420,7 +422,7 @@ function App() {
 
     try {
       const response = await fetch(
-        'http://localhost:5000/api/documents',
+        '${API_URL}/documents',
         {
           method: 'POST',
           headers: {
@@ -472,7 +474,7 @@ function App() {
 
       try {
         const response = await fetch(
-          'http://localhost:5000/api/documents',
+          '${API_URL}/documents',
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -504,7 +506,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/documents/${documentId}`,
+        `${API_URL}/documents/${documentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
