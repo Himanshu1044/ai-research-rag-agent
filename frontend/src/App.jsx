@@ -17,6 +17,7 @@ function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -68,7 +69,7 @@ function App() {
 
     try {
       const response = await fetch(
-        '${API_URL}/auth/login',
+        `${API_URL}/auth/login`,
         {
           method: 'POST',
           headers: {
@@ -98,6 +99,57 @@ function App() {
 
     } catch (error) {
       console.error('Login failed:', error);
+      setError(error.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleRegister = async (event) => {
+    event.preventDefault();
+
+    if (!email.trim() || !password) {
+      setError('Email and password are required');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Minimum 8 characters password is required');
+      return;
+    }
+
+    setAuthLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(
+        `${API_URL}/auth/register`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+            password
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || 'Registration failed'
+        );
+      }
+
+      setIsRegistering(false);
+      setEmail('');
+      setPassword('');
+      setError('Registration successful. Please log in.');
+    } catch (error) {
+      console.error('Registration failed:', error);
       setError(error.message);
     } finally {
       setAuthLoading(false);
@@ -139,7 +191,7 @@ function App() {
 
       try {
         const response = await fetch(
-          '${API_URL}/research',
+          `${API_URL}/research`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -194,7 +246,7 @@ function App() {
 
     try {
       const response = await fetch(
-        '${API_URL}/research',
+        `${API_URL}/research`,
         {
           method: 'POST',
           headers: {
@@ -381,7 +433,7 @@ function App() {
 
     try {
       const response = await fetch(
-        '${API_URL}/documents',
+        `${API_URL}/documents`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -422,7 +474,7 @@ function App() {
 
     try {
       const response = await fetch(
-        '${API_URL}/documents',
+        `${API_URL}/documents`,
         {
           method: 'POST',
           headers: {
@@ -474,7 +526,7 @@ function App() {
 
       try {
         const response = await fetch(
-          '${API_URL}/documents',
+          `${API_URL}/documents`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -552,17 +604,19 @@ function App() {
         {!token && (
           <form
             className="auth-form"
-            onSubmit={handleLogin}
+            onSubmit={isRegistering ? handleRegister : handleLogin}
           >
 
             <div className="auth-header">
 
               <h2>
-                Welcome back
+                {isRegistering ? 'Create your account' : 'Welcome back'}
               </h2>
 
               <p>
-                Login to continue your research.
+                {isRegistering
+                  ? 'Create an account to start your research.'
+                  : 'Login to continue your research.'}
               </p>
 
             </div>
@@ -590,16 +644,30 @@ function App() {
               disabled={authLoading}
             >
               {authLoading
-                ? 'Logging in...'
-                : 'Login'}
+                ? (isRegistering ? 'Creating account...' : 'Logging in...')
+                : (isRegistering ? 'Register' : 'Login')}
             </button>
 
             {error && (
               <div className="error-message">
-                <strong>Error:</strong>{' '}
+                <strong>{isRegistering ? 'Error:' : 'Message:'}</strong>{' '}
                 {error}
               </div>
             )}
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegistering((current) => !current);
+                setError('');
+                setEmail('');
+                setPassword('');
+              }}
+            >
+              {isRegistering
+                ? 'Already have an account? Login'
+                : 'Create an account'}
+            </button>
 
           </form>
         )}
