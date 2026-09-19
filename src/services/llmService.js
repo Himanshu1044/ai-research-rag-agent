@@ -11,6 +11,21 @@ const cohere = new CohereClientV2({
     token: process.env.COHERE_API_KEY
 });
 
+const toStringRecord = (item) => {
+    if (item === null || typeof item !== 'object' || Array.isArray(item)) {
+        return { value: String(item) };
+    }
+
+    const record = {};
+
+    for (const [key, value] of Object.entries(item)) {
+        if (value === null || value === undefined) continue;
+        record[key] = typeof value === 'string' ? value : String(value);
+    }
+
+    return record;
+};
+
 const toolFunctions = {
     searchWeb: (args) => searchWeb(args.query),
     readPage: (args) => readPage(args.url),
@@ -231,18 +246,12 @@ Your responsibilities:
             ? result
             : [result];
 
-        // Cohere's v2 API rejects a tool message whose content array is
-        // empty (e.g. retrieveKnowledge on an empty knowledge base, or
-        // retrieveMemory before anything's been saved). Without this
-        // fallback, `content: []` reaches the API and comes back as a
-        // confusing 400 about the output's "id" field — the id logic
-        // below is fine, it's just never reached with nothing to map.
         const toolContent = toolResults.length > 0
             ? toolResults.map((item) => ({
                 type: 'document',
                 document: {
-                    id: String(item.id ?? `${toolCall.id}`),
-                    data: item
+                    id: String(item?.id ?? `${toolCall.id}`),
+                    data: toStringRecord(item)
                 }
             }))
             : [{
