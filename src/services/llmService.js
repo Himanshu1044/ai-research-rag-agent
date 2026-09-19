@@ -233,17 +233,12 @@ Your responsibilities:
 
         messages.push({
             role: 'tool',
-            toolCallId: toolCall.id,
+            tool_call_id: toolCall.id,
             content: toolResults.map((item) => ({
                 type: 'document',
                 document: {
                     id: String(item.id ?? `${toolCall.id}`),
-                    data: {
-                        ...item,
-                        id: item.id !== undefined
-                            ? String(item.id)
-                            : undefined
-                    }
+                    data: JSON.stringify(item)
                 }
             }))
         });
