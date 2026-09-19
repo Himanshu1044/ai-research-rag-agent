@@ -1,4 +1,5 @@
 import { Worker } from "bullmq";
+import "../config/env.js";
 
 import { runResearchAgent } from "../agents/researchAgent.js";
 import { updateResearchStatus } from "../services/researchService.js";
