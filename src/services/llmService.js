@@ -231,16 +231,32 @@ Your responsibilities:
             ? result
             : [result];
 
-        messages.push({
-            role: 'tool',
-            toolCallId: toolCall.id,
-            content: toolResults.map((item) => ({
+        // Cohere's v2 API rejects a tool message whose content array is
+        // empty (e.g. retrieveKnowledge on an empty knowledge base, or
+        // retrieveMemory before anything's been saved). Without this
+        // fallback, `content: []` reaches the API and comes back as a
+        // confusing 400 about the output's "id" field — the id logic
+        // below is fine, it's just never reached with nothing to map.
+        const toolContent = toolResults.length > 0
+            ? toolResults.map((item) => ({
                 type: 'document',
                 document: {
                     id: String(item.id ?? `${toolCall.id}`),
                     data: item
                 }
             }))
+            : [{
+                type: 'document',
+                document: {
+                    id: String(toolCall.id),
+                    data: { message: 'No results found.' }
+                }
+            }];
+
+        messages.push({
+            role: 'tool',
+            toolCallId: toolCall.id,
+            content: toolContent
         });
     }
 
